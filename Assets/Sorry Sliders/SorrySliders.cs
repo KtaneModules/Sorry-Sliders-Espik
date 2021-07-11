@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Text.RegularExpressions;
 using KModkit;
 
 public class SorrySliders : MonoBehaviour {
@@ -30,32 +31,32 @@ public class SorrySliders : MonoBehaviour {
     private float startTime;
 
     private int surface;
-    private bool fixedSurface = false;
+    private bool fixedSurface;
     private readonly int fixedSurfaceVal = 30;
-    private int travelDistance = 0;
+    private int travelDistance;
 
-    private bool validPress = false;
+    private bool validPress;
     private bool canPress = true;
-    private int shot = 0;
-    private int landedVal = 0;
+    private int shot;
+    private int landedVal;
 
-    private bool arrowsLocked = false;
+    private bool arrowsLocked;
     private float randomVal = 0.2f;
-    private int currentArrow = 0;
+    private int currentArrow;
 
-    private bool setPower = false;
+    private bool setPower;
     private bool powerLocked = true;
     private int currentPower = 1;
 
-    private readonly int[] centerTable = { 0, 0, 1, 1, 2, 2, 3, 3, 5, 5, 3, 3, 2, 2, 1, 1 };
-    private readonly int[] edgeTable = { 0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1, 0 };
+    private static readonly int[] centerTable = { 0, 0, 1, 1, 2, 2, 3, 3, 5, 5, 3, 3, 2, 2, 1, 1 };
+    private static readonly int[] edgeTable = { 0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1, 0 };
 
-    private readonly float[] spaceXCoords = { -0.0447f, -0.0472f, -0.0398f, -0.0364f, -0.0446f, -0.0521f, -0.0447f };
-    private readonly float[] spaceZCoords = { -0.0635f, -0.0435f, -0.0235f, -0.0035f, 0.0165f, 0.0365f, 0.0615f };
+    private static readonly float[] spaceXCoords = { -0.0447f, -0.0472f, -0.0398f, -0.0364f, -0.0446f, -0.0521f, -0.0447f };
+    private static readonly float[] spaceZCoords = { -0.0635f, -0.0435f, -0.0235f, -0.0035f, 0.0165f, 0.0365f, 0.0615f };
 
-    private readonly float[] shootingXCoords = { 0.0234f, 0.0364f, 0.0494f };
-    private readonly float[] shootingZCoordsC = { -0.0225f, -0.0225f, -0.01f, -0.01f, -0.00175f, -0.00175f, 0.00675f, 0.00675f, 0.019f, 0.019f, 0.03125f, 0.03125f, 0.03975f, 0.03975f, 0.048f, 0.048f };
-    private readonly float[] shootingZCoordsE = { -0.0225f, -0.0225f, -0.0225f, -0.007f, -0.007f, 0.003f, 0.003f, 0.019f, 0.019f, 0.019f, 0.019f, 0.035f, 0.035f, 0.045f, 0.045f, 0.055f };
+    private static readonly float[] shootingXCoords = { 0.0234f, 0.0364f, 0.0494f };
+    private static readonly float[] shootingZCoordsC = { -0.0225f, -0.0225f, -0.01f, -0.01f, -0.00175f, -0.00175f, 0.00675f, 0.00675f, 0.019f, 0.019f, 0.03125f, 0.03125f, 0.03975f, 0.03975f, 0.048f, 0.048f };
+    private static readonly float[] shootingZCoordsE = { -0.0225f, -0.0225f, -0.0225f, -0.007f, -0.007f, 0.003f, 0.003f, 0.019f, 0.019f, 0.019f, 0.019f, 0.035f, 0.035f, 0.045f, 0.045f, 0.055f };
 
     // Bomb info
     private string serialNumber;
@@ -422,7 +423,9 @@ public class SorrySliders : MonoBehaviour {
 
         if (flashingRing > 0) {
             Audio.PlaySoundAtTransform("SorrySliders_Land", transform);
-            Debug.LogFormat("[Sorry Sliders #{0}] Your shot landed on: {1}", moduleId, landedVal);
+            Debug.LogFormat("[Sorry Sliders #{0}] Your shot landed on: {1}.", moduleId, landedVal);
+            Debug.LogFormat("[Sorry Sliders #{0}] The correct distance is {1}.", moduleId, GetCorrectDistance(landedVal));
+
 
             Rings[flashingRing - 1].material = RingColors[4];
             yield return new WaitForSeconds(0.15f);
@@ -452,5 +455,56 @@ public class SorrySliders : MonoBehaviour {
 
         randomVal = UnityEngine.Random.Range(0.1f, 0.25f);
         StartCoroutine(StartArrowFlash());
+    }
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"Use <!{0} aim left/middle/right> to aim the arrow in that position. Use <!{0} power 1-4> to set that power level (from bottom to top). Use <!{0} press 1-6> to press that space from bottom to top. Space 6 is the home space.";
+#pragma warning restore 414
+
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        command = command.Trim().ToUpperInvariant();
+        Match[] m = new Match[] { Regex.Match(command, @"^AIM\s+(LEFT|MIDDLE|RIGHT)$"), Regex.Match(command, @"^POWER\s+([1-4])$"), Regex.Match(command, @"^PRESS\s+([1-6])$") };
+        if (m[0].Success) //Aim
+        {
+            if (arrowsLocked)
+                yield return "sendtochaterror The aim position is already set.";
+            else
+            {
+                yield return null;
+                while (currentArrow != "LMR".IndexOf(m[0].Groups[1].Value[0]))
+                    yield return null;
+                PowerButton.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+        else if (m[1].Success)
+        {
+            if (!arrowsLocked)
+                yield return "sendtochaterror You must first set the arrow positions before you set the power.";
+            else if (!canPress)
+                yield return "sendtochaterror You cannot press the button at this time.";
+            else
+            {
+                yield return null;
+                while (currentPower != m[1].Groups[1].Value[0] - '0')
+                    yield return null;
+                PowerButton.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+        else if (m[2].Success)
+        {
+            if (!validPress)
+                yield return "sendtochaterror You cannot move to a space at this time.";
+            else
+            {
+                yield return null;
+                BoardSpaces[m[2].Groups[1].Value[0] - '1'].OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                if (pawnPositions.All(x => x == 6))
+                    yield return "solve";
+            }
+        }
+        yield return null;
     }
 }
