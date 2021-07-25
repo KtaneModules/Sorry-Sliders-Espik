@@ -456,6 +456,11 @@ public class SorrySliders : MonoBehaviour {
         randomVal = UnityEngine.Random.Range(0.1f, 0.25f);
         StartCoroutine(StartArrowFlash());
     }
+
+
+    // Twitch Plays - Thanks to Danny7007
+
+
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"Use <!{0} aim left/middle/right> to aim the arrow in that position. Use <!{0} power 1-4> to set that power level (from bottom to top). Use <!{0} press 1-6> to press that space from bottom to top. Space 6 is the home space.";
 #pragma warning restore 414
