@@ -14,7 +14,7 @@ MonoBehaviour:
   id: SorrySliders
   title: Sorry Sliders
   author: Espik
-  description: 'Sorry Sliders v1.1
+  description: 'Sorry Sliders v1.101
 
     "Say "SORRY!" one more goddamn time!"
 
@@ -32,6 +32,6 @@ MonoBehaviour:
 
 
     Source Code: https://github.com/Espik/Sorry-Sliders'
-  version: v1.1
+  version: v1.101
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 57217248017b2544ab182f111c4aac30, type: 3}

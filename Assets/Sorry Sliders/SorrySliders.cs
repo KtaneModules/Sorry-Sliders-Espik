@@ -32,7 +32,7 @@ public class SorrySliders : MonoBehaviour {
 
     private int surface;
     private bool fixedSurface;
-    private readonly int fixedSurfaceVal = 30;
+    private readonly int fixedSurfaceVal = 27;
     private int travelDistance;
 
     private bool validPress;
@@ -95,10 +95,13 @@ public class SorrySliders : MonoBehaviour {
         moduleCount = Bomb.GetModuleNames().Count();
         hasYahtzee = Bomb.GetModuleNames().Contains("Yahtzee");
 
+        int[] surfaceValues = { 24, 25, 26, 27, 28, 29, 35, 36, 37 }; // Temporary
+
         if (fixedSurface)
             surface = fixedSurfaceVal;
         else
-            surface = UnityEngine.Random.Range(23, 38);
+            surface = surfaceValues[UnityEngine.Random.Range(0, surfaceValues.Length)]; // Fix the equation at some point
+            //surface = UnityEngine.Random.Range(23, 38);
 
         Debug.LogFormat("<Sorry Sliders #{0}> Surface value: {1}", moduleId, surface);
 
