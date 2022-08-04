@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using System.Text.RegularExpressions;
 using KModkit;
@@ -67,6 +68,7 @@ public class SorrySliders : MonoBehaviour {
     private static int moduleIdCounter = 1;
     private int moduleId;
     private bool moduleSolved = false;
+
 
     // Ran as bomb loads
     private void Awake() {
@@ -461,11 +463,12 @@ public class SorrySliders : MonoBehaviour {
     }
 
 
-    // Twitch Plays - Thanks to Danny7007
+    // Twitch Plays - Thanks to tandyCake
 
 
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"Use <!{0} aim left/middle/right> to aim the arrow in that position. Use <!{0} power 1-4> to set that power level (from bottom to top). Use <!{0} press 1-6> to press that space from bottom to top. Space 6 is the home space.";
+    private bool ZenModeActive;
 #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command)
